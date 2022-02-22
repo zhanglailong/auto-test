@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.uut.mapper.RunningUutManagerMapper">
+	<select id="getStartInstance" resultType="org.jeecg.modules.uut.entity.RunningUutManager">
+		SELECT * 
+		FROM  running_uut_manager
+		WHERE instance_id = #{instanceId}
+			AND catalog = 'start'
+	</select>
+	<select id="getCurrentInstance" resultType="org.jeecg.modules.uut.entity.RunningUutManager">
+		SELECT `id`,`uut_type`,`instance_id`,`node_id`,`title`,`create_by`,
+			`create_time`,`assignee`,`owner`,`finish_time`,`result_type`,`status`,`catalog`,
+			`comment`,`uut_list_id`,`project_code` 
+		FROM  running_uut_manager
+		WHERE id = (
+					SELECT MAX(id) 
+					FROM running_uut_manager 
+					WHERE instance_id = #{instanceId}
+					)
+	</select>
+	<select id="queryPageList" parameterType="java.util.HashMap" resultType="org.jeecg.modules.uut.entity.RunningUutManager">
+		SELECT
+			`id`,`uut_type`,`instance_id`,`node_id`,`title`,`create_by`,`create_time`,
+		    `assignee`,`owner`,`finish_time`,`result_type`,`status`,`catalog`,`comment`,
+		    `uut_list_id`,`project_code`
+		FROM
+			`running_uut_manager`
+		WHERE 1=1
+		<if test="queryList != null">
+			<foreach collection="queryList" item="condition" open="AND" separator="AND">
+				${condition}
+			</foreach>
+		</if>
+		<if test="orderParam != null">
+			<foreach collection="orderParam" item="condition" open="ORDER BY" index="i" separator=",">
+				${condition}
+			</foreach>
+		</if>
+
+	</select>
+	<select id="getPageList" parameterType="java.util.HashMap" resultType="org.jeecg.modules.uut.entity.RunningUutManager">
+		SELECT
+		`id`,`uut_type`,`instance_id`,`node_id`,`title`,`create_by`,`create_time`,
+		`assignee`,`owner`,`finish_time`,`result_type`,`status`,`catalog`,`comment`,
+		`uut_list_id`,`project_code`
+		FROM
+		`running_uut_manager`
+		WHERE 1=1
+		<if test="uutType != null and uutType != ''">
+			AND `uut_type` = #{uutType}
+		</if>
+		<if test="title != null and title != ''">
+			AND `title` LIKE CONCAT('%', #{title}, '%')
+		</if>
+		<if test="status != null and status != ''">
+			AND `status` = #{status}
+		</if>
+		<if test="assignee != null and assignee != ''">
+			AND `assignee` != #{assignee}
+		</if>
+		AND `id` IN
+		    (SELECT MAX(`id` * 1)
+			FROM `running_uut_manager`
+			GROUP BY `instance_id`)
+		ORDER BY `status` ASC,`create_time` DESC
+	</select>
+    <select id="getList" resultType="org.jeecg.modules.uut.entity.RunningUutManager">
+		SELECT
+			uum.id,uum.uut_type,uum.instance_id,uum.node_id,uum.title,uum.create_by,uum.create_time,
+		suser.realname as assignee ,uum.owner,uum.finish_time,uum.result_type,uum.status,uum.catalog,uum.comment,
+			uum.uut_list_id,uum.project_code
+		FROM
+			running_uut_manager as uum
+		LEFT JOIN sys_user suser ON suser.id = uum.assignee
+		WHERE instance_id = #{instanceId} AND uum.finish_time is not null
+	</select>
+</mapper>

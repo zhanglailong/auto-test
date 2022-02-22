@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.task.mapper.RunningCaseHistoryMapper">
+    <resultMap id="getHistoryListData" type="org.jeecg.modules.task.entity.RunningCaseHistory" >
+        <id column="id" property="id"/>
+        <result column="test_task_id" property="testTaskId"/>
+        <result column="operation_type" property="operationType"/>
+        <result column="test_name" property="testName"/>
+        <result column="test_code" property="testCode"/>
+        <result column="test_instructions" property="testInstructions"/>
+        <result column="test_type" property="testType"/>
+        <result column="test_init" property="testInit"/>
+        <result column="test_relationship" property="testRelationship"/>
+        <result column="test_constraint" property="testConstraint"/>
+        <result column="test_over" property="testOver"/>
+        <result column="test_process" property="testProcess"/>
+        <result column="test_criterion" property="testCriterion"/>
+        <result column="task_name" property="taskName"/>
+        <result column="project_name" property="projectName"/>
+        <result column="test_person" property="testPerson"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="create_by" property="createBy"/>
+        <result column="update_by" property="updateBy"/>
+        <collection property="stepHistoryList" ofType="org.jeecg.modules.task.entity.RunningCaseStepHistory"
+                    javaType="java.util.ArrayList" column="step_id">
+            <id column="step_id" property="stepId"/>
+            <result column="operating_instructions" property="operatingInstructions"/>
+            <result column="expect_result" property="expectResult"/>
+        </collection>
+    </resultMap>
+    <select id="getRunningCaseHistoryList" resultMap="getHistoryListData">
+    <!--resultType="org.jeecg.modules.running.task.entity.RunningCaseHistory" parameterType="org.jeecg.modules.running.task.entity.RunningCaseHistory"-->
+        SELECT
+        his.id as id,
+        his.operation_type as operation_type,
+        his.test_name as test_name,
+        his.test_code as test_code,
+        his.test_instructions,
+        his.test_type,
+        his.test_relationship,
+        his.test_constraint,
+        his.test_over,
+        his.test_process,
+        his.test_criterion,
+        his.test_init,
+        step.step_id,
+        step.operating_instructions,
+        step.expect_result,
+        his.test_person,
+        task.task_name as task_name,
+        project.project_name as project_name,
+        suser2.realname as test_person,
+        suser.realname as create_by,
+        his.update_time as update_time,
+        suser1.realname as update_by
+<!--        dict.item_text as modifyFieldName-->
+        FROM
+        running_case_history his
+
+        LEFT JOIN sys_user suser ON suser.username = his.create_by
+        LEFT JOIN running_task AS task ON his.test_task_id = task.id
+        LEFT JOIN running_project AS project ON task.project_id = project.id
+        LEFT JOIN running_case_step_history AS step ON his.id = step.case_id
+        LEFT JOIN sys_user suser1 ON suser1.id = his.update_by
+        LEFT JOIN sys_user suser2 ON suser2.username = his.test_person
+        WHERE 1 = 1
+        <if test="params.startDate != null and params.startDate != ''">
+            <![CDATA[
+					and his.create_time >= concat(#{params.startDate},' 00:00:00')
+				]]>
+        </if>
+        <if test="params.endDate != null and params.endDate != ''">
+            <![CDATA[
+					and his.create_time <= concat(#{params.endDate},' 23:59:59')
+			]]>
+        </if>
+        <if test="params.operationType != null and params.operationType != -1">
+            and his.operation_type = #{params.operationType}
+        </if>
+        <if test="params.testVersion != null and params.testVersion != ''">
+            and (his.test_version = #{params.testVersion})
+        </if>
+        <if test="params.projectId != null and params.projectId != ''">
+            AND project.id = #{params.projectId}
+        </if>
+        <if test="params.testName != null and params.testName != ''">
+            AND his.test_name LIKE CONCAT('%', #{params.testName}, '%')
+        </if>
+        <if test="params.testCode != null and params.testCode != ''">
+<!--            AND his.test_code LIKE CONCAT('%', #{params.testCode}, '%')-->
+            AND his.test_code = #{params.testCode}
+        </if>
+        <if test="params.testPerson != null and params.testPerson != ''">
+            AND his.test_person LIKE CONCAT('%', #{params.testPerson}, '%')
+        </if>
+        <if test="params.modifyField != null and params.modifyField != ''">
+            AND (his.modify_field = #{params.modifyField} OR his.modify_field IS null)
+        </if>
+        <if test="params.testTaskId != null and params.testTaskId != ''">
+            AND (his.test_task_id = #{params.testTaskId})
+        </if>
+        ORDER BY
+        his.update_time desc
+    </select>
+</mapper>
+
+
+<!--        SELECT-->
+<!--        DISTINCT-->
+<!--        his.id as id,-->
+<!--        his.operation_type as operationType,-->
+<!--        his.test_name as testName,-->
+<!--        his.test_code as testCode,-->
+<!--        his.test_instructions,-->
+<!--        his.test_type,-->
+<!--        his.test_relationship,-->
+<!--        his.test_constraint,-->
+<!--        his.test_over,-->
+<!--        his.test_process,-->
+<!--        his.test_criterion,-->
+<!--        step.step_id,-->
+<!--        step.operating_instructions,-->
+<!--        step.expect_result,-->
+<!--        task.task_name as taskName,-->
+<!--        project.project_name as projectName,-->
+<!--        suser2.realname as testPerson,-->
+<!--        suser.realname as createBy,-->
+<!--        his.update_time as updateTime,-->
+<!--        suser1.realname as updateBy-->

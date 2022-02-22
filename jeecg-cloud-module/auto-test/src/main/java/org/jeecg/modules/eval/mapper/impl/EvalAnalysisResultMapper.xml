@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.eval.mapper.EvalAnalysisResultMapper">
+    <select id="queryList" parameterType="String" resultType="org.jeecg.modules.eval.vo.EvalAnalysisResultVO">
+        SELECT
+        mar.id id,
+        mar.uut_id uutId,
+        rp.project_name projectName,
+        mar.score score,
+        mar.evaluate evaluate,
+        mar.system_id systemId,
+        DATE_FORMAT( mar.create_time, '%Y-%m-%d %T' ) createTime
+        FROM
+        eval_analysis_result mar
+        LEFT JOIN running_project rp ON mar.project_id = rp.id
+        WHERE
+        mar.process_status = 1
+        <if test="uutIds != null and uutIds.size() > 0">
+            AND rp.uut_list_id IN
+            <foreach collection="uutIds" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        <if test="evaluate != null and evaluate != ''">
+            AND mar.evaluate like concat('%', #{evaluate}, '%')
+        </if>
+        <if test="projectId != null and projectId != ''">
+            AND mar.project_id like concat('%', #{projectId}, '%')
+        </if>
+        ORDER BY mar.create_time desc
+    </select>
+
+    <select id="getEvaluation" resultType="java.lang.String">
+        SELECT i.level
+        FROM eval_method_info i
+        LEFT JOIN eval_method m ON m.id = i.method_id
+        LEFT JOIN eval_system s ON s.method_id = m.id
+        LEFT JOIN eval_analysis_result r ON r.system_id = s.id
+        WHERE r.project_id = #{projectId}
+            AND r.score BETWEEN i.min_value*1.0 AND i.max_value*1.0
+    </select>
+</mapper>

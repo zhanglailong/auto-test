@@ -1,0 +1,405 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.task.mapper.RunningCaseMapper">
+	<resultMap id="getRunningCaseList" type="org.jeecg.modules.task.vo.RunningCaseVO">
+		<id column="id" property="id"/>
+		<result column="test_task_id" property="testTaskId"/>
+		<result column="uut_name" property="uutName"/>
+		<result column="uut_code" property="uutCode"/>
+		<result column="uut_name" property="uutType"/>
+		<result column="uut_version" property="uutVersion"/>
+		<result column="test_name" property="testName"/>
+		<result column="project_name" property="projectName"/>
+		<result column="test_name" property="testName"/>
+		<result column="test_code" property="testCode"/>
+		<result column="test_relationship" property="testRelationship"/>
+		<result column="test_type" property="testType"/>
+		<result column="test_instructions" property="testInstructions"/>
+		<result column="test_init" property="testInit"/>
+		<result column="create_time" property="createTime"/>
+		<result column="test_constraint" property="testConstraint"/>
+		<result column="test_over" property="testOver"/>
+		<result column="test_criterion" property="testCriterion"/>
+		<result column="test_process" property="testProcess"/>
+		<result column="test_person" property="testPerson"/>
+		<result column="test_date" property="testDate"/>
+		<result column="test_situation" property="testSituation"/>
+		<result column="test_result" property="testResult"/>
+		<result column="test_supervisor" property="testSupervisor"/>
+		<result column="test_version" property="testVersion"/>
+		<result column="test_question_code" property="testQuestionCode"/>
+		<result column="test_attributes" property="testAttributes"/>
+		<result column="actual_result" property="actualResult"/>
+		<result column="test_sx" property="testSx"/>
+		<result column="user_order" property="userOrder"/>
+		<result column="test_real_result" property="testRealResult"/>
+		<result column="create_by" property="createBy"/>
+		<result column="turn_id" property="turnId"/>
+		<result column="turn_version" property="turnVersion"/>
+		<collection property="stepList" ofType="org.jeecg.modules.task.entity.RunningCaseStep"
+		javaType="java.util.ArrayList" column="step_id">
+			<id column="step_id" property="stepId"/>
+			<result column="operating_instructions" property="operatingInstructions"/>
+			<result column="expect_result" property="expectResult"/>
+			<result column="stepTestResult" property="testResult" />
+		</collection>
+	</resultMap>
+	<select id="getListData" resultMap="getRunningCaseList">
+		SELECT
+			testCase.id,
+			testCase.test_task_id,
+			task.task_name AS taskName,
+			project.project_name AS projectName,
+		    uut.uut_name,
+		    uut.uut_type,
+		    uut.uut_code,
+		    uut.uut_version,
+			testCase.test_name,
+			testCase.test_code,
+			testCase.test_relationship,
+			testCase.test_type,
+			testCase.test_instructions,
+			testCase.test_init,
+		    testCase.create_time,
+			testCase.test_constraint,
+			testCase.test_over,
+		    testCase.test_criterion,
+			testCase.test_process,
+			testCase.test_person,
+			testCase.test_date,
+			testCase.test_situation,
+			testCase.test_result,
+			testCase.test_supervisor,
+			testCase.test_version,
+			testCase.test_question_code,
+			testCase.test_attributes,
+			testCase.file_status,
+			step.step_id,
+			step.operating_instructions,
+			step.expect_result,
+			step.test_result AS stepTestResult,
+			testCase.actual_result,
+			testCase.test_sx,
+			testCase.user_order,
+			testCase.test_real_result,
+			testCase.create_by,
+			testCase.turn_id,
+			testCase.turn_version
+		FROM
+			running_case AS testCase
+		LEFT JOIN running_task AS task ON testCase.test_task_id = task.id
+		LEFT JOIN running_project AS project ON task.project_id = project.id
+		LEFT JOIN running_case_step AS step ON testCase.id = step.case_id
+		LEFT JOIN running_uut_list AS  uut ON  project.uut_list_id = uut.id
+
+		WHERE testCase.del_flag = 0 AND testCase.file_status = 0
+		<if test="testTaskId.length > 0">
+			and testCase.test_task_id in
+			<foreach item="key" collection="testTaskId" open="(" separator="," close=")">
+				#{key}
+			</foreach>
+		</if>
+
+	 	<if test="testName !='' and testName !=null">
+			AND testCase.test_name LIKE concat('%', #{testName}, '%')
+		</if> 
+		<if test="testCode !='' and testCode !=null">
+			AND testCase.test_code LIKE concat('%', #{testCode}, '%')
+		</if> 
+		<if test="testPerson !='' and testPerson !=null">
+			AND testCase.test_person LIKE concat('%', #{testPerson}, '%')
+		</if> 
+ 		<if test="testDate !='' and testDate !=null">
+			AND testCase.create_time LIKE concat('%', #{testDate}, '%')
+		</if>
+		ORDER BY testCase.create_time DESC,step.id ASC
+	</select>
+
+	<select id="getFileCaseListData" resultMap="getRunningCaseList">
+		SELECT
+		testCase.id,
+		testCase.test_task_id,
+		task.task_name AS taskName,
+		project.project_name AS projectName,
+		uut.uut_name,
+		uut.uut_type,
+		uut.uut_code,
+		uut.uut_version,
+		testCase.test_name,
+		testCase.test_code,
+		testCase.test_relationship,
+		testCase.test_type,
+		testCase.test_instructions,
+		testCase.test_init,
+		testCase.create_time,
+		testCase.test_constraint,
+		testCase.test_over,
+		testCase.test_criterion,
+		testCase.test_process,
+		testCase.test_person,
+		testCase.test_date,
+		testCase.test_situation,
+		testCase.test_result,
+		testCase.test_supervisor,
+		testCase.test_version,
+		testCase.test_question_code,
+		testCase.test_attributes,
+		testCase.file_status,
+		step.step_id,
+		step.operating_instructions,
+		step.expect_result,
+		step.test_result AS stepTestResult,
+		testCase.actual_result,
+		testCase.test_sx,
+		testCase.user_order,
+		testCase.test_real_result,
+		testCase.create_by,
+		testCase.turn_id,
+		testCase.turn_version
+		FROM
+		running_case AS testCase
+		LEFT JOIN running_task AS task ON testCase.test_task_id = task.id
+		LEFT JOIN running_project AS project ON task.project_id = project.id
+		LEFT JOIN running_case_step AS step ON testCase.id = step.case_id
+		LEFT JOIN running_uut_list AS  uut ON  project.uut_list_id = uut.id
+
+		WHERE testCase.del_flag = 0 AND testCase.file_status = 1
+		<if test="testTaskId.length > 0">
+			and testCase.test_task_id in
+			<foreach item="key" collection="testTaskId" open="(" separator="," close=")">
+				#{key}
+			</foreach>
+		</if>
+
+		<if test="testName !='' and testName !=null">
+			AND testCase.test_name LIKE concat('%', #{testName}, '%')
+		</if>
+		<if test="testCode !='' and testCode !=null">
+			AND testCase.test_code LIKE concat('%', #{testCode}, '%')
+		</if>
+		<if test="testPerson !='' and testPerson !=null">
+			AND testCase.test_person LIKE concat('%', #{testPerson}, '%')
+		</if>
+		<if test="testDate !='' and testDate !=null">
+			AND testCase.create_time LIKE concat('%', #{testDate}, '%')
+		</if>
+		ORDER BY testCase.create_time DESC,step.id ASC
+	</select>
+
+	<select id="queryPageListByTestName" resultMap="getRunningCaseList">
+		SELECT
+		testCase.id,
+		testCase.test_task_id,
+		task.task_name AS taskName,
+		project.project_name AS projectName,
+		uut.uut_name,
+		uut.uut_type,
+		uut.uut_code,
+		uut.uut_version,
+		testCase.test_name,
+		testCase.test_code,
+		testCase.test_relationship,
+		testCase.test_type,
+		testCase.test_instructions,
+		testCase.test_init,
+		testCase.create_time,
+		testCase.test_constraint,
+		testCase.test_over,
+		testCase.test_criterion,
+		testCase.test_process,
+		testCase.test_person,
+		testCase.test_date,
+		testCase.test_situation,
+		testCase.test_result,
+		testCase.test_supervisor,
+		testCase.test_version,
+		testCase.test_question_code,
+		testCase.test_attributes,
+		step.step_id,
+		step.operating_instructions,
+		step.expect_result,
+		step.test_result AS stepTestResult,
+		testCase.actual_result,
+		testCase.test_sx,
+		testCase.user_order,
+		testCase.test_real_result,
+		testCase.create_by,
+		testCase.turn_id,
+		testCase.turn_version
+		FROM
+		running_case AS testCase
+		LEFT JOIN running_task AS task ON testCase.test_task_id = task.id
+		LEFT JOIN running_project AS project ON task.project_id = project.id
+		LEFT JOIN running_case_step AS step ON testCase.id = step.case_id
+		LEFT JOIN running_uut_list AS  uut ON  project.uut_list_id = uut.id
+
+		WHERE testCase.del_flag = 0
+
+		<if test="testName !='' and testName !=null">
+			AND testCase.test_name LIKE concat('%', #{testName}, '%')
+		</if>
+		ORDER BY testCase.create_time DESC,step.id ASC
+	</select>
+
+	<select id="queryPageListByTestId" resultMap="getRunningCaseList">
+		SELECT
+		testCase.id,
+		testCase.test_task_id,
+		task.task_name AS taskName,
+		project.project_name AS projectName,
+		uut.uut_name,
+		uut.uut_type,
+		uut.uut_code,
+		uut.uut_version,
+		testCase.test_name,
+		testCase.test_code,
+		testCase.test_relationship,
+		testCase.test_type,
+		testCase.test_instructions,
+		testCase.test_init,
+		testCase.create_time,
+		testCase.test_constraint,
+		testCase.test_over,
+		testCase.test_criterion,
+		testCase.test_process,
+		testCase.test_person,
+		testCase.test_date,
+		testCase.test_situation,
+		testCase.test_result,
+		testCase.test_supervisor,
+		testCase.test_version,
+		testCase.test_question_code,
+		testCase.test_attributes,
+		step.step_id,
+		step.operating_instructions,
+		step.expect_result,
+		step.test_result AS stepTestResult,
+		testCase.actual_result,
+		testCase.test_sx,
+		testCase.user_order,
+		testCase.test_real_result,
+		testCase.create_by,
+		testCase.turn_id,
+		testCase.turn_version
+		FROM
+		running_case AS testCase
+		LEFT JOIN running_task AS task ON testCase.test_task_id = task.id
+		LEFT JOIN running_project AS project ON task.project_id = project.id
+		LEFT JOIN running_case_step AS step ON testCase.id = step.case_id
+		LEFT JOIN running_uut_list AS  uut ON  project.uut_list_id = uut.id
+
+		WHERE testCase.del_flag = 0
+		<if test="testId.length > 0">
+			AND testCase.id in
+			<foreach item="key" collection="testId" open="(" separator="," close=")">
+				#{key}
+			</foreach>
+		</if>
+		ORDER BY testCase.create_time DESC,step.id ASC
+	</select>
+
+	<select id="getTestCopyDataById" resultType="org.jeecg.modules.task.entity.RunningCase">
+		SELECT
+			test_task_id,
+			test_name,
+			test_code,
+			test_relationship,
+			test_type,
+			test_instructions,
+			test_init,
+			test_constraint,
+			test_over,
+			test_process,
+			test_criterion,
+			test_person,
+			test_date,
+			test_situation,
+			test_result,
+			test_supervisor,
+			test_version,
+			test_question_code,
+			test_attributes,
+			operating_instructions,
+			expect_result,
+			actual_result,
+			test_sx,
+			test_real_result
+		FROM
+		 	running_case
+		WHERE
+			<if test="caseId.length > 0">
+				id in
+				<foreach item="key" collection="caseId" open="(" separator="," close=")">
+					#{key}
+				</foreach>
+			</if>
+	</select>
+
+	<select id="getUutListByCaseId" resultType="org.jeecg.modules.uut.entity.RunningUutList">
+		SELECT * FROM running_uut_list WHERE id =
+			(SELECT uut_list_id FROM running_project WHERE id =
+			    (SELECT project_id FROM running_task WHERE id =
+			    	(SELECT test_task_id FROM running_case WHERE id = #{caseId})
+			    )
+			)
+	</select>
+
+	<select id="getUutListByTaskId" resultType="org.jeecg.modules.uut.entity.RunningUutList">
+		SELECT * FROM running_uut_list WHERE id =
+			(SELECT uut_list_id FROM running_project WHERE id =
+			(SELECT project_id FROM running_task WHERE id =#{taskId}
+			)
+		)
+	</select>
+
+	<select id="getUutVersionId" resultType="string">
+		SELECT version FROM running_uut_version WHERE id = #{turnVersion}
+	</select>
+
+	<select id="getListByProjectId" resultMap="getRunningCaseList">
+		SELECT
+		testCase.id,
+		testCase.test_task_id,
+		task.task_name AS taskName,
+		project.project_name AS projectName,
+		uut.uut_name,
+		uut.uut_type,
+		uut.uut_code,
+		uut.uut_version,
+		testCase.test_name,
+		testCase.test_code,
+		testCase.test_relationship,
+		testCase.test_type,
+		testCase.test_instructions,
+		testCase.test_init,
+		testCase.create_time,
+		testCase.test_constraint,
+		testCase.test_over,
+		testCase.test_criterion,
+		testCase.test_process,
+		testCase.test_person,
+		testCase.test_date,
+		testCase.test_situation,
+		testCase.test_result,
+		testCase.test_supervisor,
+		testCase.test_version,
+		testCase.test_question_code,
+		testCase.test_attributes,
+		step.step_id,
+		step.operating_instructions,
+		step.expect_result,
+		testCase.actual_result,
+		testCase.test_sx,
+		testCase.user_order,
+		testCase.test_real_result,
+		testCase.create_by
+		FROM
+		running_case AS testCase
+		LEFT JOIN running_task AS task ON testCase.test_task_id = task.id
+		LEFT JOIN running_project AS project ON task.project_id = project.id
+		LEFT JOIN running_case_step AS step ON testCase.id = step.case_id
+		LEFT JOIN running_uut_list AS  uut ON  project.uut_list_id = uut.id
+		WHERE
+		project.id = #{projectId}
+	</select>
+</mapper>

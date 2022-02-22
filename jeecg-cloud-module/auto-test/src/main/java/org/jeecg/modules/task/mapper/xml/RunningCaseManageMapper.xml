@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.task.mapper.RunningCaseManageMapper">
+	<resultMap id="getRunningCaseList" type="org.jeecg.modules.task.vo.RunningCaseVO">
+		<id column="id" property="id"/>
+		<result column="test_task_id" property="testTaskId"/>
+		<result column="uut_name" property="uutName"/>
+		<result column="uut_code" property="uutCode"/>
+		<result column="uut_name" property="uutType"/>
+		<result column="uut_version" property="uutVersion"/>
+		<result column="test_name" property="testName"/>
+		<result column="project_name" property="projectName"/>
+		<result column="test_name" property="testName"/>
+		<result column="test_code" property="testCode"/>
+		<result column="test_relationship" property="testRelationship"/>
+		<result column="test_type" property="testType"/>
+		<result column="test_instructions" property="testInstructions"/>
+		<result column="test_init" property="testInit"/>
+		<result column="create_time" property="createTime"/>
+		<result column="test_constraint" property="testConstraint"/>
+		<result column="test_over" property="testOver"/>
+		<result column="test_criterion" property="testCriterion"/>
+		<result column="test_process" property="testProcess"/>
+		<result column="test_person" property="testPerson"/>
+		<result column="test_date" property="testDate"/>
+		<result column="test_situation" property="testSituation"/>
+		<result column="test_result" property="testResult"/>
+		<result column="test_supervisor" property="testSupervisor"/>
+		<result column="test_version" property="testVersion"/>
+		<result column="test_question_code" property="testQuestionCode"/>
+		<result column="test_attributes" property="testAttributes"/>
+		<result column="actual_result" property="actualResult"/>
+		<result column="test_sx" property="testSx"/>
+		<result column="user_order" property="userOrder"/>
+		<result column="test_real_result" property="testRealResult"/>
+		<result column="create_by" property="createBy"/>
+		<collection property="stepList" ofType="org.jeecg.modules.task.entity.RunningCaseStep"
+					javaType="java.util.ArrayList" column="step_id">
+			<id column="step_id" property="stepId"/>
+			<result column="operating_instructions" property="operatingInstructions"/>
+			<result column="expect_result" property="expectResult"/>
+		</collection>
+	</resultMap>
+	<select id="getListData" resultMap="getRunningCaseList">
+			SELECT
+				testCase.id,
+				testCase.test_task_id,
+				task.task_name AS taskName,
+				project.project_name AS projectInfo,
+				uut.uut_name,
+				uut.uut_type,
+				uut.uut_code,
+				uut.uut_version,
+				testCase.test_name,
+				testCase.test_code,
+			    testCase.test_relationship,
+				testCase.test_type,
+				testCase.test_criterion,
+				testCase.test_instructions,
+				testCase.test_init,
+				testCase.create_time,
+				testCase.test_constraint,
+				testCase.test_over,
+				testCase.test_process,
+				testCase.test_person,
+				testCase.test_date,
+				testCase.test_situation,
+				testCase.test_result,
+				testCase.test_supervisor,
+				testCase.test_version,
+				testCase.test_question_code,
+				testCase.test_attributes,
+				step.step_id,
+				step.operating_instructions,
+				step.expect_result,
+				testCase.actual_result,
+				testCase.test_sx,
+				testCase.user_order,
+				testCase.test_real_result
+			FROM
+				running_case AS testCase
+		LEFT JOIN running_task AS task ON testCase.test_task_id = task.id
+		LEFT JOIN running_project AS project ON project.id = task.project_id
+		LEFT JOIN running_case_step AS step ON testCase.id = step.case_id
+		LEFT JOIN running_uut_list AS  uut ON  project.uut_list_id = uut.id
+		WHERE testCase.del_flag=0
+		<if test="projectId !='' and projectId !=null">
+			AND project.id LIKE concat('%', #{projectId}, '%')
+		</if> 
+	 	<if test="testName !='' and testName !=null">
+			AND testCase.test_name LIKE concat('%', #{testName}, '%')
+		</if> 
+		<if test="testCode !='' and testCode !=null">
+			AND testCase.test_code LIKE concat('%', #{testCode}, '%')
+		</if> 
+		<if test="testPerson !='' and testPerson !=null">
+			AND testCase.test_person LIKE concat('%', #{testPerson}, '%')
+		</if> 
+ 		<if test="testDate !='' and testDate !=null">
+			AND testCase.create_time LIKE concat('%', #{testDate}, '%')
+		</if>
+		ORDER BY testCase.create_time DESC,step.id ASC
+	</select>
+<!--	<select id="getStepList" resultType="org.jeecg.modules.running.task.vo.RunningCaseManageVO">-->
+<!--		SELECT-->
+<!--			step.step_id,-->
+<!--			step.operating_instructions,-->
+<!--			step.expect_result-->
+<!--		FROM-->
+<!--			running_case_step AS step-->
+<!--	</select>-->
+</mapper>

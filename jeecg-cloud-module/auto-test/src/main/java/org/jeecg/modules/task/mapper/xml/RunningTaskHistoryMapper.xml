@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.task.mapper.RunningTaskHistoryMapper">
+
+	<select id="getOperationHistoryList" resultType="org.jeecg.modules.task.entity.RunningTaskHistory"
+		parameterType="org.jeecg.modules.task.entity.RunningTaskHistory">
+		SELECT
+		his.task_name as taskName,
+		his.task_code as taskCode,
+		his.project_info as projectInfo,
+		his.task_soft_name as taskSoftName,
+		his.update_time as updateTime,
+		his.operation_type as operationType,
+		suser.realname as createBy,
+		suser1.realname as reviser
+		FROM
+		running_task_history his
+<!--		LEFT JOIN sys_dict_item dict ON his.modify_field = dict.item_value-->
+<!--		LEFT JOIN sys_dict dictMain ON dict.dict_id = dictMain.id-->
+<!--		and dictMain.dict_code = 'runningTaskItems'-->
+		LEFT JOIN sys_user suser ON suser.username = his.create_by
+		LEFT JOIN sys_user suser1 ON suser1.username = his.reviser
+		WHERE 1 = 1
+		<if test="params.startDate != null and params.startDate != ''">
+				<![CDATA[
+					and his.create_time >= concat(#{params.startDate},' 00:00:00')
+				]]>
+		</if>
+		<if test="params.endDate != null and params.endDate != ''">
+				<![CDATA[
+					and his.create_time <= concat(#{params.endDate},' 23:59:59')
+				]]>
+		</if>
+		<if test="params.operationType != null and params.operationType != -1">
+			and his.operation_type = #{params.operationType}
+		</if>
+		<if test="params.taskName != null and params.taskName != ''">
+			and (his.task_name = #{params.taskName})
+		</if>
+		<if test="params.taskCode != null and params.taskCode != ''">
+			and (his.task_code = #{params.taskCode})
+		</if>
+		<if test="params.projectId != null and params.projectId != ''">
+			and (his.project_id = #{params.projectId})
+		</if>
+		<if test="params.taskSoftName != null and params.taskSoftName != ''">
+			and (his.task_soft_name = #{params.taskSoftName})
+		</if>
+		<if test="params.taskSoftVersion != null and params.taskSoftVersion != ''">
+			and (his.task_soft_version = #{params.taskSoftVersion})
+		</if>
+		<if test="params.taskId != null and params.taskId != ''">
+			and (his.task_id = #{params.taskId})
+		</if>
+		ORDER BY
+		his.update_time desc
+	</select>
+</mapper>

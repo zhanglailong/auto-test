@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.uut.mapper.RunningUutListMapper">
+	<select id="findUniqueBy" resultType="org.jeecg.modules.uut.entity.RunningUutList">
+		SELECT * 
+		FROM  running_uut_list
+		WHERE ${fieldname} = #{value}
+	</select>
+    <select id="findUniqueVoBy" resultType="org.jeecg.modules.uut.vo.RunningUutListVo">
+		SELECT *
+		FROM  running_uut_list
+		WHERE ${fieldname} = #{value}
+	</select>
+</mapper>

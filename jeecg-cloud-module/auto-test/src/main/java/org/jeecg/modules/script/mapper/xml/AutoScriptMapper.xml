@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.script.mapper.AutoScriptMapper">
+
+    <select id="treeScript" resultType="org.jeecg.modules.script.entity.AutoScriptVo">
+        SELECT
+	a.*,
+	an.node_name
+FROM
+	auto_script a
+	 LEFT JOIN auto_nodes an ON an.id = a.record_node_id
+	  where a.idel = 0 and an.idel =0
+    </select>
+
+
+
+	<select id="moveUp" resultType="org.jeecg.modules.script.entity.AutoScript" >
+			SELECT
+		*
+		FROM
+		auto_script a
+		WHERE
+		a.sort &lt; #{sort}
+		and a.idel = 0
+		and a.test_case_id =#{testCaseId}
+		ORDER BY
+		a.sort DESC
+		LIMIT 0,1
+	</select>
+
+	<select id="moveDown" resultType="org.jeecg.modules.script.entity.AutoScript" >
+		SELECT
+		*
+		FROM
+		auto_script a
+		WHERE
+		a.sort &gt; #{sort}
+		and a.idel =0
+		and a.test_case_id =#{testCaseId}
+		ORDER BY
+		a.sort asc
+		LIMIT 0,1
+	</select>
+</mapper>

@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.task.mapper.RunningQuestionMapper">
+
+	<select id="getListData" resultType="org.jeecg.modules.task.vo.RunningQuestionVO">
+		SELECT
+			qe.id,
+			qe.case_id,
+			task.task_name AS taskName,
+			project.project_name AS projectName,
+			rCase.test_name AS caseName,
+			qe.question_code,
+			qe.question_version,
+			qe.question_type,
+			qe.question_level,
+			qe.question_number,
+			qe.question_location,
+			qe.question_description,
+			qe.opinion,
+			qe.reporter,
+			qe.report_date,
+			qe.create_by,
+			qe.case_step_id,
+			qe.file_status
+		FROM
+			running_question AS qe
+		LEFT JOIN running_case AS rCase ON qe.case_id = rCase.id
+		LEFT JOIN running_task AS task ON rCase.test_task_id = task.id
+		LEFT JOIN running_project AS project ON project.id = task.project_id
+		where qe.del_flag=0 AND qe.file_status=0
+		<if test="caseId.length > 0">
+			and qe.case_id in
+			<foreach item="key" collection="caseId" open="(" separator="," close=")">
+				#{key}
+			</foreach>
+		</if>
+		<if test="questionCode !='' and questionCode !=null">
+			AND qe.question_code LIKE CONCAT('%', #{questionCode}, '%')
+		</if> 
+		<if test="questionType !='' and questionType !=null">
+			AND qe.question_type LIKE CONCAT('%', #{questionType}, '%')
+		</if> 
+		<if test="questionLevel !='' and questionLevel !=null">
+			AND qe.question_level LIKE CONCAT('%', #{questionLevel}, '%')
+		</if>  
+		ORDER BY qe.create_time DESC
+	</select>
+
+	<select id="getFileQuestionListData" resultType="org.jeecg.modules.task.vo.RunningQuestionVO">
+		SELECT
+		qe.id,
+		qe.case_id,
+		task.task_name AS taskName,
+		project.project_name AS projectName,
+		rCase.test_name AS caseName,
+		qe.question_code,
+		qe.question_version,
+		qe.question_type,
+		qe.question_level,
+		qe.question_number,
+		qe.question_location,
+		qe.question_description,
+		qe.opinion,
+		qe.reporter,
+		qe.report_date,
+		qe.create_by,
+		qe.case_step_id,
+		qe.file_status
+		FROM
+		running_question AS qe
+		LEFT JOIN running_case AS rCase ON qe.case_id = rCase.id
+		LEFT JOIN running_task AS task ON rCase.test_task_id = task.id
+		LEFT JOIN running_project AS project ON project.id = task.project_id
+		where qe.del_flag=0 AND qe.file_status=1
+		<if test="caseId.length > 0">
+			and qe.case_id in
+			<foreach item="key" collection="caseId" open="(" separator="," close=")">
+				#{key}
+			</foreach>
+		</if>
+		<if test="questionCode !='' and questionCode !=null">
+			AND qe.question_code LIKE CONCAT('%', #{questionCode}, '%')
+		</if>
+		<if test="questionType !='' and questionType !=null">
+			AND qe.question_type LIKE CONCAT('%', #{questionType}, '%')
+		</if>
+		<if test="questionLevel !='' and questionLevel !=null">
+			AND qe.question_level LIKE CONCAT('%', #{questionLevel}, '%')
+		</if>
+		ORDER BY qe.create_time DESC
+	</select>
+
+	<!--用例问题单操作历史记录查询-->
+	<select id="getOperationHistoryList" resultType="map" parameterType="org.jeecg.modules.task.entity.RunningQuestionHistory">
+		SELECT
+			his.id as id,
+			his.main_id as mainId,
+			his.case_id as caseId,
+			task.task_name AS taskName,
+			project.project_name AS projectName,
+			his.question_code as questionCode,
+			his.question_type as questionType,
+			project.project_name as projectName,
+			his.question_level as questionLevel,
+			his.op_type as opType,
+			his.sort as sort,
+			his.create_time as createTime,
+			his.update_time as updateTime,
+			suser.realname as createBy,
+			suser1.realname as updateBy
+		FROM
+			running_question_history his
+			LEFT JOIN running_case AS rCase ON his.case_id = rCase.id
+			LEFT JOIN running_task AS task ON rCase.test_task_id = task.id
+			LEFT JOIN running_project AS project ON project.id = task.project_id
+			LEFT JOIN sys_user suser ON suser.username = his.create_by
+			LEFT JOIN sys_user suser1 ON suser1.username = his.update_by
+		WHERE 1=1
+<!--			AND dictMain.dict_code = 'runningQuestionItems'-->
+			<if test="params.startDate != null and params.startDate != ''">
+				<![CDATA[
+					and his.create_time >= concat(#{params.startDate},' 00:00:00')
+				]]>
+			</if>
+			<if test="params.endDate != null and params.endDate != ''">
+				<![CDATA[
+					and his.create_time <= concat(#{params.endDate},' 23:59:59')
+				]]>
+			</if>
+			<if test="params.projectId !='' and params.projectId !=null">
+				AND project.id LIKE CONCAT('%', #{params.projectId}, '%')
+			</if>
+			<if test="params.opType != null and params.opType != -1">
+				and his.op_type = #{params.opType}
+			</if>
+			<if test="params.questionCode !='' and params.questionCode !=null">
+<!--				AND his.question_code LIKE CONCAT('%', #{params.questionCode}, '%')-->
+				AND his.question_code = #{params.questionCode}
+			</if>
+			<if test="params.questionType !='' and params.questionType !=null">
+				AND his.question_type LIKE CONCAT('%', #{params.questionType}, '%')
+			</if>
+			<if test="params.questionLevel !='' and params.questionLevel !=null">
+				AND his.question_level LIKE CONCAT('%', #{params.questionLevel}, '%')
+			</if>
+			<if test="params.questionVersion !='' and params.questionVersion !=null">
+				AND his.question_version LIKE CONCAT('%', #{params.questionVersion}, '%')
+			</if>
+			<if test="params.caseId != '' and params.caseId != null">
+				AND his.case_id = #{params.caseId}
+			</if>
+
+		ORDER BY
+			his.update_time desc
+
+</select>
+
+</mapper>

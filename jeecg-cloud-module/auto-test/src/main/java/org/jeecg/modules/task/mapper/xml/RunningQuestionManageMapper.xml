@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.task.mapper.RunningQuestionManageMapper">
+
+	<select id="getListData" resultType="org.jeecg.modules.task.vo.RunningQuestionManageVO">
+			SELECT
+				qe.id,
+				qe.question_code,
+				task.id AS taskId,
+				task.task_name as taskName,
+				project.project_name as projectName,
+				cases.test_name AS caseName,
+				qe.question_version,
+				qe.question_type,
+				qe.question_level,
+				qe.question_location,
+				qe.reporter,
+				qe.report_date
+			FROM
+				running_question AS qe
+			LEFT JOIN running_case AS cases ON qe.case_id = cases.id
+			LEFT JOIN running_task AS task ON cases.test_task_id = task.id
+			LEFT JOIN running_project AS project ON task.project_id = project.id
+		 	WHERE qe.del_flag=0
+	 	<if test="projectId !='' and projectId !=null">
+			AND project.id LIKE CONCAT('%', #{projectId}, '%')
+		</if> 
+		<if test="questionCode !='' and questionCode !=null">
+			AND qe.question_code LIKE CONCAT('%', #{questionCode}, '%')
+		</if>
+		<if test="questionType !='' and questionType !=null">
+			AND qe.question_type LIKE CONCAT('%', #{questionType}, '%')
+		</if> 
+		<if test="questionLevel !='' and questionLevel !=null">
+			AND qe.question_level LIKE CONCAT('%', #{questionLevel}, '%')
+		</if>
+		ORDER BY qe.create_time DESC
+	</select>
+
+
+
+
+
+
+</mapper>

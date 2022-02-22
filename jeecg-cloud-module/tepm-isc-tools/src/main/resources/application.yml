@@ -1,0 +1,5 @@
+server:
+  port: 9678
+spring:
+  application:
+    name: tepm-isc-tools

@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.project.mapper.AutoRunningProjectMapper">
+    <select id="findUniqueBy" resultType="org.jeecg.modules.project.entity.AutoRunningProject">
+		SELECT *
+		FROM  running_project
+		WHERE ${fieldname} = #{value}
+	</select>
+
+    <!--查询任务到期且没有结束的任务列表-->
+    <select id="getNotFinishProjectList" resultType="org.jeecg.modules.project.entity.AutoRunningProject">
+		select
+			id,
+			project_name,
+			project_member_ids
+		from
+			running_project
+		where
+			finish_status = 0
+			<![CDATA[
+		  and finish_date <= CURDATE()
+			]]>
+			and b_not_finish_msg = 0
+		  AND del_flag = 0
+	</select>
+
+    <!--操作历史记录查询-->
+    <select id="getOperationHistoryList" resultType="map" parameterType="org.jeecg.modules.project.entity.RunningProjectHistory">
+        SELECT
+        his.id as id,
+        his.main_id as mainId,
+        his.project_name as projectName,
+        his.project_Code as projectCode,
+        his.uut_name as uutName,
+        his.modify_field as modifyField,
+        dict.item_text as modifyFieldName,
+        his.modify_field_value modifyFieldVale,
+        his.modify_field_old_value modifyFieldOldVale,
+        his.op_type as opType,
+        his.sort as sort,
+        his.create_time as createTime,
+        suser.realname as createBy,
+        suser1.realname as updateBy
+        FROM
+        running_project_history his
+        LEFT JOIN sys_dict_item dict on his.modify_field = dict.item_value
+        LEFT JOIN sys_dict dictMain ON dict.dict_id = dictMain.id
+        LEFT JOIN sys_user suser ON suser.username = his.create_by
+        LEFT JOIN sys_user suser1 ON suser1.username = his.update_by
+        WHERE
+        his.modify_field is NULL AND his.main_id = #{params.mainId}
+        <!--			AND dictMain.dict_code = 'runningProjectItems'-->
+        <if test="params.startDate != null and params.startDate != ''">
+            <![CDATA[
+					and his.create_time >= concat(#{params.startDate},' 00:00:00')
+				]]>
+        </if>
+        <if test="params.endDate != null and params.endDate != ''">
+            <![CDATA[
+					and his.create_time <= concat(#{params.endDate},' 23:59:59')
+				]]>
+        </if>
+        <if test="params.opType != null and params.opType != -1">
+            and his.op_type = #{params.opType}
+        </if>
+        <!--			<if test="params.modifyField != null and params.modifyField != ''">-->
+        <!--				and (his.modify_field = #{params.modifyField} OR his.modify_field IS null)-->
+        <!--			</if>-->
+        <if test="params.projectName != null and params.projectName != ''">
+            and (his.project_name = #{params.projectName})
+        </if>
+        <if test="params.projectCode != null and params.projectCode != ''">
+            and (his.project_Code = #{params.projectCode})
+        </if>
+        <if test="params.uutName != null and params.uutName != ''">
+            and (his.uut_name = #{params.uutName})
+        </if>
+        <if test="params.uutVersion != null and params.uutVersion != ''">
+            and (his.uut_version = #{params.uutVersion})
+        </if>
+        ORDER BY
+        his.create_time desc
+    </select>
+
+    <select id="queryList" resultType="org.jeecg.modules.project.vo.RunningProjectVo">
+		SELECT
+			rpro.begin_date as beginDate,
+			rpro.finish_date as finishDate,
+			rpro.project_name as projectName,
+			rpro.project_code as projectCode,
+			rpro.uut_name as uutName,
+			rpro.uut_type as rUutType,
+			rpro.project_members as projectMembers,
+			rtask.task_name as taskName,
+			rtask.task_code as taskCode,
+			rtask.task_type as taskType,
+			rum.title,
+			rum.uut_type as mUutType,
+			rum.instance_id as instanceId,
+			rum.assignee
+		FROM
+			running_project rpro
+				INNER JOIN running_task rtask ON rpro.id = rtask.project_id
+				INNER JOIN running_uut_manager rum ON rpro.uut_list_id = rum.uut_list_id
+	</select>
+    <select id="getRoleToUser" resultType="java.util.Map" >
+		SELECT
+			role_name as roleName,
+			GROUP_CONCAT(realname) AS realName
+		FROM
+			sys_role AS r
+			LEFT JOIN sys_user_role AS ur ON r.id = ur.role_id
+			LEFT JOIN sys_user AS u ON u.id = ur.user_id
+		WHERE role_grouping = 'projectRole' AND ur.project_id = #{projectId}
+		GROUP BY role_name,r.id
+		ORDER BY r.id
+	</select>
+</mapper>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.project.mapper.RunningRoleMapper">
+
+	<select id="getListData" resultType="org.jeecg.modules.project.entity.RunningRole">
+		SELECT
+			*
+		FROM
+			running_role
+		where del_flag=0
+	 	<if test="roleId !='' and roleId !=null">
+			AND id =#{roleId}
+		</if> 
+		<if test="createTime !='' and createTime !=null">
+			AND create_time LIKE concat('%', #{createTime}, '%')
+		</if> 
+		ORDER BY id ASC
+	</select>
+	
+	<!--角色管理操作历史记录查询-->
+	<select id="getOperationHistoryList" resultType="map" parameterType="org.jeecg.modules.project.entity.RunningRoleHistory">
+		SELECT
+			his.id AS id,
+			his.main_id AS mainId,
+			his.modify_field AS modifyField,
+			dict.item_text AS modifyFieldName,
+			his.modify_field_value modifyFieldVale,
+			his.modify_field_old_value modifyFieldOldVale,
+			his.op_type AS opType,
+			his.sort AS sort,
+			his.create_time AS createTime,
+			suser.realname AS createBy
+		FROM
+			running_role_history his
+			LEFT JOIN sys_dict_item dict ON his.modify_field = dict.item_value
+			LEFT JOIN sys_dict dictMain ON dict.dict_id = dictMain.id
+			LEFT JOIN sys_user suser ON suser.id = his.create_by
+		WHERE
+			his.main_id = #{params.mainId}
+			AND dictMain.dict_code = 'runningRolesItems'
+			<if test="params.startDate != null and params.startDate != ''">
+				<![CDATA[
+					and his.create_time >= concat(#{params.startDate},' 00:00:00')
+				]]>
+			</if>
+			<if test="params.endDate != null and params.endDate != ''">
+				<![CDATA[
+					and his.create_time <= concat(#{params.endDate},' 23:59:59')
+				]]>
+			</if>
+		ORDER BY
+			his.create_time asc
+	</select>
+
+</mapper>

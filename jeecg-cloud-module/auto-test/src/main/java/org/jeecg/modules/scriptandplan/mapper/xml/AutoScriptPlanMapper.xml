@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.scriptandplan.mapper.AutoScriptPlanMapper">
+
+
+
+
+    <select id="aspMoveUp" resultType="org.jeecg.modules.scriptandplan.entity.AutoScriptPlan">
+		SELECT
+		*
+		FROM
+		auto_script_plan a
+		WHERE
+		a.sort &lt; #{sort}
+		and a.idel = 0
+		and a.test_case_id =#{testCaseId}
+		ORDER BY
+		a.sort DESC
+		LIMIT 0,1
+	</select>
+
+    <select id="aspMoveDown" resultType="org.jeecg.modules.scriptandplan.entity.AutoScriptPlan">
+		SELECT
+		*
+		FROM
+		auto_script_plan a
+		WHERE
+		a.sort &gt; #{sort}
+		and a.idel =0
+		and a.test_case_id =#{testCaseId}
+		ORDER BY
+		a.sort asc
+		LIMIT 0,1
+	</select>
+</mapper>

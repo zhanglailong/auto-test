@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.project.mapper.RunningProjectTurnMapper">
+    <resultMap id="getTurnVersion" type="org.jeecg.modules.project.entity.RunningProjectTurn">
+        <id column="id" property="id"/>
+        <result column="turn_num" property="turnNum"/>
+        <result column="comment" property="comment"/>
+        <collection property="uutTurnVersion" ofType="org.jeecg.modules.project.entity.RunningProjectTurnVersion"
+         javaType="java.util.ArrayList" column="id">
+            <result column="version_id" property="versionId"/>
+        </collection>
+    </resultMap>
+    <select id="getTurn" resultMap="getTurnVersion">
+        SELECT
+            t.id,
+            t.turn_num,
+            tv.version_id,
+            t.comment
+        FROM running_project_turn AS t
+        LEFT JOIN running_project_turn_version AS tv ON tv.turn_id = t.id
+        WHERE t.project_id = #{projectId}
+    </select>
+
+
+    <select id="getOptionByCondition" resultType="org.jeecg.common.system.vo.DictModel">
+
+        <!-- 根据项目ID获取轮次列表 -->
+        <if test="projectId !='' and projectId !=null
+			and (turnId == '' or turnId == null)">
+            SELECT rpt.id AS `value`, rpt.turn_num AS `text`
+        </if>
+
+        <!-- 根据项目ID及轮次ID获取测试版本列表 -->
+        <if test="projectId !='' and projectId !=null
+			and turnId != '' and turnId != null">
+            SELECT ruv.id AS `value`, ruv.version AS `text`
+        </if>
+
+        FROM running_project_turn rpt
+        LEFT JOIN running_project_turn_version rptv ON rpt.id = rptv.turn_id
+        LEFT JOIN running_uut_version ruv ON ruv.id = rptv.version_id
+        WHERE rpt.project_id = #{projectId}
+
+        <!-- 根据项目ID获取轮次列表 -->
+        <if test="projectId !='' and projectId !=null
+			and (turnId == '' or turnId == null)">
+            GROUP BY rpt.id
+        </if>
+
+        <!-- 根据项目ID及轮次ID获取测试类型列表 -->
+        <if test="projectId !='' and projectId !=null
+			and turnId != '' and turnId != null">
+            AND rpt.id = #{turnId}
+            GROUP BY ruv.id
+        </if>
+
+    </select>
+
+    <select id="getOptionByConditionByTaskId" resultType="org.jeecg.common.system.vo.DictModel">
+
+        <!-- 根据项目ID获取轮次列表 -->
+        <if test="taskId !='' and taskId !=null
+			and (turnId == '' or turnId == null)">
+            SELECT rpt.id AS `value`, rpt.turn_num AS `text`
+        </if>
+
+        <!-- 根据项目ID及轮次ID获取测试版本列表 -->
+        <if test="taskId !='' and taskId !=null
+			and turnId != '' and turnId != null">
+            SELECT ruv.id AS `value`, ruv.version AS `text`
+        </if>
+
+        FROM running_task rt
+        LEFT JOIN running_project_turn rpt ON rt.turn_id = rpt.id
+        LEFT JOIN running_project_turn_version rptv ON rpt.id = rptv.turn_id
+        LEFT JOIN running_uut_version ruv ON ruv.id = rptv.version_id
+        WHERE rt.id = #{taskId}
+
+        <!-- 根据项目ID获取轮次列表 -->
+        <if test="taskId !='' and taskId !=null
+			and (turnId == '' or turnId == null)">
+            GROUP BY rpt.id
+        </if>
+
+        <!-- 根据项目ID及轮次ID获取测试类型列表 -->
+        <if test="taskId !='' and taskId !=null
+			and turnId != '' and turnId != null">
+            AND rpt.id = #{turnId}
+            GROUP BY ruv.id
+        </if>
+
+    </select>
+    
+    <select id="getUutNameByStatus" resultType="org.jeecg.common.system.vo.DictModel">
+        SELECT id AS `value`, uut_name AS `text`
+        FROM running_uut_list
+        WHERE uut_status = 2 AND delete_flag=0
+    </select>
+
+</mapper>

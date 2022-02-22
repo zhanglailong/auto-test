@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.task.mapper.RunningTaskMapper">
+
+	<select id="getListData" resultType="org.jeecg.modules.task.vo.RunningTaskVO">
+		SELECT
+			task.id,
+			task.project_id,
+			task.task_code,
+			task.task_name,
+			task.task_type,
+			project.project_name AS projectInfo,
+			task.task_tool,
+			task.task_soft_name,
+			task.task_soft_version,
+			task.task_principal,
+			task.task_data,
+			task.task_status,
+			task.cu_file,
+			task.begin_date,
+			task.finish_date,
+			task.remark,
+			task.create_by,
+			task.create_time,
+			task.update_by,
+			task.update_time,
+			task.sys_org_code,
+			task.task_assets_id,
+			task.task_soft_file,
+			task.task_soft_type,
+			task.task_assets_detail,
+			task.test_type,
+			task.file_status,
+			projectTurn.turn_num,
+			task.turn_id,
+			task.turn_version
+<!--			uutVersion.version-->
+		FROM
+			running_task AS task
+		LEFT JOIN running_project AS project ON task.project_id = project.id
+		LEFT JOIN running_project_turn AS projectTurn ON task.turn_id = projectTurn.id
+<!--		LEFT JOIN running_project_turn_version AS projectTurnVersionn ON projectTurn.id = projectTurnVersionn.turn_id-->
+<!--		LEFT JOIN running_uut_version AS uutVersion ON projectTurnVersionn.version_id = uutVersion.version-->
+		where task.del_flag=0 AND task.file_status=0
+		<if test="projectId !='' and projectId !=null">
+			AND task.project_id LIKE concat('%', #{projectId}, '%')
+		</if> 
+		<if test="taskName !='' and taskName !=null">
+			AND task.task_name LIKE concat('%', #{taskName}, '%')
+		</if> 
+		<if test="priority !='' and priority !=null">
+			AND task.priority LIKE concat('%', #{priority}, '%')
+		</if>  
+		<if test="taskCode !='' and taskCode !=null">
+			AND task.task_code LIKE concat('%', #{taskCode}, '%')
+		</if> 
+		<if test="taskSoftName !='' and taskSoftName !=null">
+			AND task.task_soft_name LIKE concat('%', #{taskSoftName}, '%')
+		</if> 
+		ORDER BY task.create_time DESC
+	</select>
+
+	<select id="getFileTaskListData" resultType="org.jeecg.modules.task.vo.RunningTaskVO">
+		SELECT
+		task.id,
+		task.project_id,
+		task.task_code,
+		task.task_name,
+		task.task_type,
+		project.project_name AS projectInfo,
+		task.task_tool,
+		task.task_soft_name,
+		task.task_soft_version,
+		task.task_principal,
+		task.task_data,
+		task.task_status,
+		task.cu_file,
+		task.begin_date,
+		task.finish_date,
+		task.remark,
+		task.create_by,
+		task.create_time,
+		task.update_by,
+		task.update_time,
+		task.sys_org_code,
+		task.task_assets_id,
+		task.task_soft_file,
+		task.task_soft_type,
+		task.task_assets_detail,
+		task.test_type,
+		task.file_status,
+		projectTurn.turn_num,
+		task.turn_id,
+		task.turn_version
+		<!--			uutVersion.version-->
+		FROM
+		running_task AS task
+		LEFT JOIN running_project AS project ON task.project_id = project.id
+		LEFT JOIN running_project_turn AS projectTurn ON task.turn_id = projectTurn.id
+		<!--		LEFT JOIN running_project_turn_version AS projectTurnVersionn ON projectTurn.id = projectTurnVersionn.turn_id-->
+		<!--		LEFT JOIN running_uut_version AS uutVersion ON projectTurnVersionn.version_id = uutVersion.version-->
+		where task.del_flag=0 AND task.file_status=1
+		<if test="projectId !='' and projectId !=null">
+			AND task.project_id LIKE concat('%', #{projectId}, '%')
+		</if>
+		<if test="taskName !='' and taskName !=null">
+			AND task.task_name LIKE concat('%', #{taskName}, '%')
+		</if>
+		<if test="priority !='' and priority !=null">
+			AND task.priority LIKE concat('%', #{priority}, '%')
+		</if>
+		<if test="taskCode !='' and taskCode !=null">
+			AND task.task_code LIKE concat('%', #{taskCode}, '%')
+		</if>
+		<if test="taskSoftName !='' and taskSoftName !=null">
+			AND task.task_soft_name LIKE concat('%', #{taskSoftName}, '%')
+		</if>
+		ORDER BY task.create_time DESC
+	</select>
+</mapper>
